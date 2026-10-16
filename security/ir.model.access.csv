@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_cc_pdc_user,cc.pdc.user,model_cc_pdc,group_cc_user,1,1,1,0
+access_cc_pdc_manager,cc.pdc.manager,model_cc_pdc,group_cc_manager,1,1,1,1
+access_cc_pdc_portal,cc.pdc.portal,model_cc_pdc,base.group_portal,1,0,0,0
+access_cc_commission_user,cc.commission.line.user,model_cc_commission_line,group_cc_user,1,0,0,0
+access_cc_commission_manager,cc.commission.line.manager,model_cc_commission_line,group_cc_manager,1,1,1,1
+access_cc_rule_user,cc.commission.rule.user,model_cc_commission_rule,group_cc_user,1,0,0,0
+access_cc_rule_manager,cc.commission.rule.manager,model_cc_commission_rule,group_cc_manager,1,1,1,1
+access_cc_aging_user,cc.aging.report.user,model_cc_aging_report,group_cc_user,1,0,0,0
+access_cc_pdc_bounce_wizard,cc.pdc.bounce.wizard,model_cc_pdc_bounce_wizard,group_cc_user,1,1,1,1

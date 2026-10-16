@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Portal home entries -->
+    <template id="portal_my_home_credit" name="Show Credit and PDC" customize_show="True"
+              inherit_id="portal.portal_my_home" priority="45">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/credit_pdc_commission/static/description/icon.png'"/>
+                <t t-set="title">Credit and Dues</t>
+                <t t-set="text">Credit limit, aging and online payment</t>
+                <t t-set="url" t-value="'/my/credit'"/>
+                <t t-set="config_card" t-value="True"/>
+            </t>
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/credit_pdc_commission/static/description/icon.png'"/>
+                <t t-set="title">My Cheques</t>
+                <t t-set="text">Track your post-dated cheques</t>
+                <t t-set="url" t-value="'/my/pdc'"/>
+                <t t-set="placeholder_count" t-value="'pdc_count'"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Credit dashboard -->
+    <template id="portal_my_credit" name="My Credit and Dues">
+        <t t-call="portal.portal_layout">
+            <div class="container mb-5">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <h3 class="mb-0">Credit and Dues</h3>
+                    <div class="d-flex gap-2">
+                        <a href="/my/credit/statement" class="btn btn-outline-secondary">
+                            <i class="fa fa-download"/> Download Statement
+                        </a>
+                        <a t-if="data['overdue_total'] > 0" href="/my/invoices/overdue" class="btn btn-primary">
+                            <i class="fa fa-credit-card"/> Pay All Overdue
+                        </a>
+                    </div>
+                </div>
+
+                <div t-if="credit['hold']" class="alert alert-danger" role="alert">
+                    Your account is on credit hold. Please clear the overdue amount to place new orders.
+                </div>
+
+                <!-- Credit summary -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="card h-100"><div class="card-body">
+                            <div class="text-muted small">Credit Limit</div>
+                            <div class="h4 mb-0">
+                                <t t-if="credit['enabled']"><span t-out="credit['limit']" t-options='{"widget": "monetary", "display_currency": currency}'/></t>
+                                <t t-else="">No limit</t>
+                            </div>
+                        </div></div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card h-100"><div class="card-body">
+                            <div class="text-muted small">Outstanding</div>
+                            <div class="h4 mb-0"><span t-out="credit['exposure']" t-options='{"widget": "monetary", "display_currency": currency}'/></div>
+                        </div></div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card h-100"><div class="card-body">
+                            <div class="text-muted small">Available Credit</div>
+                            <div class="h4 mb-0">
+                                <t t-if="credit['enabled']"><span t-out="credit['available']" t-options='{"widget": "monetary", "display_currency": currency}'/></t>
+                                <t t-else="">-</t>
+                            </div>
+                        </div></div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card h-100"><div class="card-body">
+                            <div class="text-muted small">Overdue</div>
+                            <div t-attf-class="h4 mb-0 #{'text-danger' if credit['overdue'] > 0 else ''}">
+                                <span t-out="credit['overdue']" t-options='{"widget": "monetary", "display_currency": currency}'/>
+                            </div>
+                        </div></div>
+                    </div>
+                </div>
+
+                <div t-if="credit['enabled'] and credit['limit']" class="mb-4">
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>Credit used</span><span><t t-out="'%.0f' % credit['percent']"/>%</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div t-attf-class="progress-bar #{'bg-danger' if credit['percent'] >= 100 else 'bg-warning' if credit['percent'] >= 80 else 'bg-success'}"
+                             role="progressbar" t-attf-style="width: #{min(credit['percent'], 100)}%"/>
+                    </div>
+                </div>
+
+                <!-- Aging -->
+                <h5>Aging Summary</h5>
+                <div class="table-responsive mb-4">
+                    <table class="table table-sm table-bordered text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th t-foreach="data['buckets']" t-as="b"><t t-out="b[1]"/></th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td t-foreach="data['buckets']" t-as="b">
+                                    <span t-out="data['aging'][b[0]]" t-options='{"widget": "monetary", "display_currency": currency}'/>
+                                </td>
+                                <td><strong><span t-out="data['total']" t-options='{"widget": "monetary", "display_currency": currency}'/></strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Open items -->
+                <h5>Open Items</h5>
+                <div class="table-responsive mb-4">
+                    <table class="table table-sm align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Document</th><th>Due Date</th><th class="text-end">Days Overdue</th>
+                                <th class="text-end">Amount Due</th><th/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-if="not data['rows']"><td colspan="5" class="text-center text-muted">Nothing outstanding.</td></tr>
+                            <tr t-foreach="data['rows']" t-as="row">
+                                <td>
+                                    <a t-if="row['url']" t-att-href="row['url']"><t t-out="row['name']"/></a>
+                                    <t t-else=""><t t-out="row['name']"/></t>
+                                </td>
+                                <td><span t-out="row['due']" t-options='{"widget": "date"}'/></td>
+                                <td t-attf-class="text-end #{'text-danger' if row['days'] > 0 else ''}"><t t-out="row['days']"/></td>
+                                <td class="text-end"><span t-out="row['residual']" t-options='{"widget": "monetary", "display_currency": currency}'/></td>
+                                <td class="text-end">
+                                    <a t-if="row['payable']" t-att-href="row['url']" class="btn btn-sm btn-primary">Pay Now</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Cheques -->
+                <h5>Post-Dated Cheques</h5>
+                <t t-call="credit_pdc_commission.portal_pdc_table">
+                    <t t-set="pdcs" t-value="data['pdcs']"/>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <!-- Reusable cheque table -->
+    <template id="portal_pdc_table" name="Portal PDC Table">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Reference</th><th>Cheque No.</th><th>Bank</th><th>Cheque Date</th>
+                        <th class="text-end">Amount</th><th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-if="not pdcs"><td colspan="6" class="text-center text-muted">No cheques.</td></tr>
+                    <tr t-foreach="pdcs" t-as="p">
+                        <td><t t-out="p.name"/></td>
+                        <td><t t-out="p.cheque_no"/></td>
+                        <td><t t-out="p.bank_name"/></td>
+                        <td><span t-field="p.cheque_date"/></td>
+                        <td class="text-end"><span t-field="p.amount"/></td>
+                        <td>
+                            <span t-attf-class="badge #{'text-bg-success' if p.state == 'cleared' else 'text-bg-danger' if p.state == 'bounced' else 'text-bg-info' if p.state == 'deposited' else 'text-bg-secondary'}">
+                                <t t-out="dict(p._fields['state']._description_selection(request.env))[p.state]"/>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <template id="portal_my_pdc" name="My Cheques">
+        <t t-call="portal.portal_layout">
+            <div class="container mb-5">
+                <h3>My Cheques</h3>
+                <t t-call="credit_pdc_commission.portal_pdc_table"/>
+            </div>
+        </t>
+    </template>
+</odoo>

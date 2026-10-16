@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_cc_user" model="res.groups">
+        <field name="name">Credit and PDC: User</field>
+    </record>
+    <record id="group_cc_manager" model="res.groups">
+        <field name="name">Credit and PDC: Manager</field>
+        <field name="implied_ids" eval="[(4, ref('group_cc_user'))]"/>
+    </record>
+
+    <!-- Salespeople and invoicing accountants get the base access automatically -->
+    <record id="sales_team.group_sale_salesman" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('credit_pdc_commission.group_cc_user'))]"/>
+    </record>
+    <record id="account.group_account_invoice" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('credit_pdc_commission.group_cc_user'))]"/>
+    </record>
+
+    <!-- Multi-company -->
+    <record id="rule_cc_pdc_company" model="ir.rule">
+        <field name="name">PDC: multi-company</field>
+        <field name="model_id" ref="model_cc_pdc"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_cc_commission_company" model="ir.rule">
+        <field name="name">Commission: multi-company</field>
+        <field name="model_id" ref="model_cc_commission_line"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_cc_aging_company" model="ir.rule">
+        <field name="name">Aging: multi-company</field>
+        <field name="model_id" ref="model_cc_aging_report"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <!-- Portal: own cheques only -->
+    <record id="rule_cc_pdc_portal" model="ir.rule">
+        <field name="name">PDC: portal customers see their own</field>
+        <field name="model_id" ref="model_cc_pdc"/>
+        <field name="domain_force">[('commercial_partner_id', '=', user.commercial_partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+    </record>
+
+    <!-- Salesperson sees own commission / own customers' aging; accountants and managers see all -->
+    <record id="rule_cc_commission_own" model="ir.rule">
+        <field name="name">Commission: own lines</field>
+        <field name="model_id" ref="model_cc_commission_line"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_cc_user'))]"/>
+    </record>
+    <record id="rule_cc_commission_all" model="ir.rule">
+        <field name="name">Commission: all lines (accountant / manager)</field>
+        <field name="model_id" ref="model_cc_commission_line"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('account.group_account_invoice')), (4, ref('group_cc_manager'))]"/>
+    </record>
+    <record id="rule_cc_aging_own" model="ir.rule">
+        <field name="name">Aging: own customers</field>
+        <field name="model_id" ref="model_cc_aging_report"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_cc_user'))]"/>
+    </record>
+    <record id="rule_cc_aging_all" model="ir.rule">
+        <field name="name">Aging: all (accountant / manager)</field>
+        <field name="model_id" ref="model_cc_aging_report"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('account.group_account_invoice')), (4, ref('group_cc_manager'))]"/>
+    </record>
+</odoo>

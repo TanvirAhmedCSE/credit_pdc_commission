@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_partner_view_form_cc" model="ir.ui.view">
+        <field name="name">res.partner.form.credit.control</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_pdc" type="object" class="oe_stat_button" icon="fa-pencil-square-o"
+                        groups="credit_pdc_commission.group_cc_user">
+                    <field name="cc_pdc_count" widget="statinfo" string="Cheques"/>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Credit Control" name="credit_control" groups="credit_pdc_commission.group_cc_user">
+                    <field name="cc_currency_id" invisible="1"/>
+                    <group>
+                        <group string="Credit Policy">
+                            <field name="cc_credit_check" groups="credit_pdc_commission.group_cc_manager"/>
+                            <field name="cc_credit_check" readonly="1" groups="!credit_pdc_commission.group_cc_manager"/>
+                            <field name="cc_credit_limit" groups="credit_pdc_commission.group_cc_manager"
+                                   invisible="not cc_credit_check"/>
+                            <field name="cc_credit_limit" readonly="1" groups="!credit_pdc_commission.group_cc_manager"
+                                   invisible="not cc_credit_check"/>
+                            <field name="cc_credit_hold" groups="credit_pdc_commission.group_cc_manager"/>
+                            <field name="cc_credit_hold" readonly="1" groups="!credit_pdc_commission.group_cc_manager"/>
+                        </group>
+                        <group string="Current Position">
+                            <field name="cc_credit_status" widget="badge"
+                                   decoration-success="cc_credit_status == 'ok'"
+                                   decoration-warning="cc_credit_status == 'warning'"
+                                   decoration-danger="cc_credit_status in ('exceeded', 'hold')"/>
+                            <field name="cc_receivable"/>
+                            <field name="cc_uninvoiced"/>
+                            <field name="cc_exposure"/>
+                            <field name="cc_available" invisible="not cc_credit_check"/>
+                            <field name="cc_utilization" widget="percentage" invisible="not cc_credit_check"/>
+                            <field name="cc_overdue_amount"/>
+                            <field name="cc_pdc_held"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_cc_credit_customers" model="ir.actions.act_window">
+        <field name="name">Credit Customers</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">['|', ('cc_credit_check', '=', True), ('cc_credit_hold', '=', True)]</field>
+    </record>
+</odoo>

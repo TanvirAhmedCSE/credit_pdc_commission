@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="mail_template_overdue_reminder" model="mail.template">
+        <field name="name">Credit Control: Overdue Invoice Reminder</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="subject">Payment reminder: invoice {{ object.name }} is overdue</field>
+        <field name="partner_to">{{ object.partner_id.id }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px; font-size: 13px;">
+    <p>Dear <t t-out="object.partner_id.name or ''">Customer</t>,</p>
+    <p>
+        Our records show that invoice <strong t-out="object.name or ''">INV/0001</strong>
+        of <strong t-out="format_amount(object.amount_residual, object.currency_id)">100.00</strong>
+        was due on <t t-out="object.invoice_date_due">date</t>
+        (<t t-out="object.cc_days_overdue">0</t> days overdue).
+    </p>
+    <p>Please arrange the payment at your earliest convenience. You can review and pay online:</p>
+    <p>
+        <a t-att-href="'%s%s' % (object.get_base_url(), object.get_portal_url())"
+           style="background-color: #875A7B; padding: 8px 16px; color: #FFFFFF; text-decoration: none; border-radius: 4px;">
+            View and Pay Invoice
+        </a>
+    </p>
+    <p>If you have already sent a payment or cheque, please ignore this message.</p>
+    <p>Thank you,<br/><t t-out="object.company_id.name or ''">Company</t></p>
+</div>
+        </field>
+    </record>
+
+    <record id="mail_template_pdc_received" model="mail.template">
+        <field name="name">PDC: Cheque Receipt Acknowledgement</field>
+        <field name="model_id" ref="model_cc_pdc"/>
+        <field name="subject">Cheque received: {{ object.cheque_no }} ({{ object.name }})</field>
+        <field name="partner_to">{{ object.partner_id.id }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px; font-size: 13px;">
+    <p>Dear <t t-out="object.partner_id.name or ''">Customer</t>,</p>
+    <p>
+        We acknowledge receipt of cheque no. <strong t-out="object.cheque_no or ''">000123</strong>
+        (<t t-out="object.bank_name or ''">Bank</t>) for
+        <strong t-out="format_amount(object.amount, object.currency_id)">100.00</strong>,
+        dated <t t-out="object.cheque_date">date</t>. Reference: <t t-out="object.name or ''">PDC/0001</t>.
+    </p>
+    <p>You can track the status of your cheques anytime on the customer portal:
+        <a t-att-href="'%s/my/pdc' % object.get_base_url()">My Cheques</a>.
+    </p>
+    <p>Thank you,<br/><t t-out="object.company_id.name or ''">Company</t></p>
+</div>
+        </field>
+    </record>
+
+    <record id="mail_template_pdc_bounced" model="mail.template">
+        <field name="name">PDC: Cheque Bounced Notice</field>
+        <field name="model_id" ref="model_cc_pdc"/>
+        <field name="subject">Cheque returned: {{ object.cheque_no }} ({{ object.name }})</field>
+        <field name="partner_to">{{ object.partner_id.id }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px; font-size: 13px;">
+    <p>Dear <t t-out="object.partner_id.name or ''">Customer</t>,</p>
+    <p>
+        Cheque no. <strong t-out="object.cheque_no or ''">000123</strong>
+        (<t t-out="object.bank_name or ''">Bank</t>) for
+        <strong t-out="format_amount(object.amount, object.currency_id)">100.00</strong>
+        was returned by the bank.
+    </p>
+    <p t-if="object.bounce_reason">Reason: <t t-out="object.bounce_reason">reason</t></p>
+    <p>The related invoice(s) are due again. Please arrange an alternative payment, or pay online:
+        <a t-att-href="'%s/my/credit' % object.get_base_url()">Credit and Dues</a>.
+    </p>
+    <p>Thank you,<br/><t t-out="object.company_id.name or ''">Company</t></p>
+</div>
+        </field>
+    </record>
+</odoo>

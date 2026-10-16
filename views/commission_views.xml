@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="cc_commission_line_view_list" model="ir.ui.view">
+        <field name="name">cc.commission.line.list</field>
+        <field name="model">cc.commission.line</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'cancel'" decoration-success="state == 'paid'"
+                  decoration-danger="is_reversal">
+                <header>
+                    <button name="action_approve" type="object" string="Approve"
+                            groups="credit_pdc_commission.group_cc_manager"/>
+                    <button name="action_pay" type="object" string="Mark Paid"
+                            groups="credit_pdc_commission.group_cc_manager"/>
+                    <button name="action_draft" type="object" string="Reset"
+                            groups="credit_pdc_commission.group_cc_manager"/>
+                </header>
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="partner_id"/>
+                <field name="invoice_id"/>
+                <field name="days_to_collect" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="collected_amount" sum="Collected"/>
+                <field name="commission_base" sum="Base" optional="hide"/>
+                <field name="rate"/>
+                <field name="amount" sum="Commission"/>
+                <field name="is_reversal" column_invisible="1"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="cc_commission_line_view_form" model="ir.ui.view">
+        <field name="name">cc.commission.line.form</field>
+        <field name="model">cc.commission.line</field>
+        <field name="arch" type="xml">
+            <form create="0">
+                <header>
+                    <button name="action_approve" type="object" string="Approve" class="btn-primary"
+                            invisible="state != 'draft'" groups="credit_pdc_commission.group_cc_manager"/>
+                    <button name="action_pay" type="object" string="Mark Paid" class="btn-primary"
+                            invisible="state != 'approved'" groups="credit_pdc_commission.group_cc_manager"/>
+                    <button name="action_draft" type="object" string="Reset"
+                            invisible="state not in ('approved', 'cancel')"
+                            groups="credit_pdc_commission.group_cc_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,approved,paid"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="partner_id"/>
+                            <field name="invoice_id"/>
+                            <field name="payment_move_id"/>
+                            <field name="date"/>
+                            <field name="days_to_collect"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="collected_amount"/>
+                            <field name="commission_base"/>
+                            <field name="rate"/>
+                            <field name="amount"/>
+                            <field name="approved_date"/>
+                            <field name="paid_date"/>
+                            <field name="note"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="cc_commission_line_view_search" model="ir.ui.view">
+        <field name="name">cc.commission.line.search</field>
+        <field name="model">cc.commission.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="user_id"/>
+                <field name="partner_id"/>
+                <field name="invoice_id"/>
+                <filter name="draft" string="To Approve" domain="[('state', '=', 'draft')]"/>
+                <filter name="approved" string="Approved (unpaid)" domain="[('state', '=', 'approved')]"/>
+                <filter name="paid" string="Paid" domain="[('state', '=', 'paid')]"/>
+                <group>
+                    <filter name="group_user" string="Salesperson" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_partner" string="Customer" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_month" string="Collection Month" context="{'group_by': 'date:month'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="cc_commission_line_view_pivot" model="ir.ui.view">
+        <field name="name">cc.commission.line.pivot</field>
+        <field name="model">cc.commission.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Commission Analysis">
+                <field name="user_id" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="collected_amount" type="measure"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_cc_commission" model="ir.actions.act_window">
+        <field name="name">Commission Lines</field>
+        <field name="res_model">cc.commission.line</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_group_user': 1}</field>
+    </record>
+
+    <record id="action_cc_commission_analysis" model="ir.actions.act_window">
+        <field name="name">Commission Analysis</field>
+        <field name="res_model">cc.commission.line</field>
+        <field name="view_mode">pivot,list</field>
+        <field name="domain">[('state', '!=', 'cancel')]</field>
+    </record>
+
+    <!-- Rules -->
+    <record id="cc_commission_rule_view_list" model="ir.ui.view">
+        <field name="name">cc.commission.rule.list</field>
+        <field name="model">cc.commission.rule</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="max_days"/>
+                <field name="rate"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_cc_commission_rule" model="ir.actions.act_window">
+        <field name="name">Commission Rules</field>
+        <field name="res_model">cc.commission.rule</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>

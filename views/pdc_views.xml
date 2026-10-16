@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="cc_pdc_view_form" model="ir.ui.view">
+        <field name="name">cc.pdc.form</field>
+        <field name="model">cc.pdc</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_deposit" string="Deposit" type="object" class="btn-primary"
+                            invisible="state != 'received'" groups="account.group_account_invoice"/>
+                    <button name="action_clear" string="Mark Cleared" type="object" class="btn-primary"
+                            invisible="state != 'deposited'" groups="account.group_account_invoice"/>
+                    <button name="action_open_bounce" string="Bounced" type="object"
+                            invisible="state not in ('received', 'deposited', 'cleared')"
+                            groups="account.group_account_invoice"/>
+                    <button name="action_send_receipt" string="Send Receipt" type="object"
+                            invisible="state == 'cancel'"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state not in ('received', 'deposited')"
+                            confirm="Cancel this cheque?"/>
+                    <button name="action_reset" string="Reset to Received" type="object"
+                            invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="received,deposited,cleared"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_payment" type="object" class="oe_stat_button" icon="fa-money"
+                                invisible="not payment_id">
+                            <div class="o_stat_info"><span class="o_stat_text">Payment</span></div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Bounced" bg_color="text-bg-danger" invisible="state != 'bounced'"/>
+                    <widget name="web_ribbon" title="Cleared" bg_color="text-bg-success" invisible="state != 'cleared'"/>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="commercial_partner_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="partner_id" readonly="state != 'received'"/>
+                            <field name="cheque_no" readonly="state != 'received'"/>
+                            <field name="bank_name" readonly="state != 'received'"/>
+                            <field name="amount" readonly="state != 'received'"/>
+                            <field name="invoice_due"/>
+                        </group>
+                        <group>
+                            <field name="received_date" readonly="state != 'received'"/>
+                            <field name="cheque_date" readonly="state != 'received'"/>
+                            <field name="days_to_maturity" invisible="state != 'received'"/>
+                            <field name="deposit_journal_id" readonly="state not in ('received', 'deposited')"/>
+                            <field name="user_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group invisible="state in ('received', 'cancel')">
+                        <group>
+                            <field name="deposit_date"/>
+                            <field name="clear_date" invisible="state != 'cleared'"/>
+                        </group>
+                        <group invisible="state != 'bounced'">
+                            <field name="bounce_date"/>
+                            <field name="bounce_reason"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Invoices" name="invoices">
+                            <field name="invoice_ids" readonly="state != 'received'"
+                                   domain="[('move_type', '=', 'out_invoice'), ('state', '=', 'posted'), ('payment_state', 'in', ('not_paid', 'partial')), ('commercial_partner_id', '=', commercial_partner_id)]">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="invoice_date_due"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="amount_total"/>
+                                    <field name="amount_residual"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="cc_pdc_view_list" model="ir.ui.view">
+        <field name="name">cc.pdc.list</field>
+        <field name="model">cc.pdc</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="state == 'bounced'" decoration-success="state == 'cleared'"
+                  decoration-info="state == 'deposited'" decoration-muted="state == 'cancel'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="cheque_no"/>
+                <field name="bank_name"/>
+                <field name="cheque_date"/>
+                <field name="days_to_maturity" optional="hide"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="amount" sum="Total"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="cc_pdc_view_search" model="ir.ui.view">
+        <field name="name">cc.pdc.search</field>
+        <field name="model">cc.pdc</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="cheque_no"/>
+                <field name="bank_name"/>
+                <filter name="in_hand" string="In Hand" domain="[('state', 'in', ('received', 'deposited'))]"/>
+                <filter name="due" string="Due for Deposit"
+                        domain="[('state', '=', 'received'), ('cheque_date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="deposited" string="Deposited" domain="[('state', '=', 'deposited')]"/>
+                <filter name="cleared" string="Cleared" domain="[('state', '=', 'cleared')]"/>
+                <filter name="bounced" string="Bounced" domain="[('state', '=', 'bounced')]"/>
+                <group>
+                    <filter name="group_partner" string="Customer" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_maturity" string="Cheque Month" context="{'group_by': 'cheque_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="cc_pdc_view_pivot" model="ir.ui.view">
+        <field name="name">cc.pdc.pivot</field>
+        <field name="model">cc.pdc</field>
+        <field name="arch" type="xml">
+            <pivot string="Cheque Maturity Forecast">
+                <field name="cheque_date" interval="month" type="row"/>
+                <field name="state" type="col"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="cc_pdc_view_graph" model="ir.ui.view">
+        <field name="name">cc.pdc.graph</field>
+        <field name="model">cc.pdc</field>
+        <field name="arch" type="xml">
+            <graph string="Cheques by Maturity" type="bar">
+                <field name="cheque_date" interval="month"/>
+                <field name="amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_cc_pdc" model="ir.actions.act_window">
+        <field name="name">Post-Dated Cheques</field>
+        <field name="res_model">cc.pdc</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="context">{'search_default_in_hand': 1}</field>
+    </record>
+
+    <record id="action_cc_pdc_due" model="ir.actions.act_window">
+        <field name="name">Cheques Due for Deposit</field>
+        <field name="res_model">cc.pdc</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_due': 1}</field>
+    </record>
+</odoo>

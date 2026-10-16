@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_cc_root" name="Credit and PDC" sequence="35"
+              web_icon="credit_pdc_commission,static/description/icon.png"
+              groups="credit_pdc_commission.group_cc_user"/>
+
+    <menuitem id="menu_cc_credit" name="Credit Control" parent="menu_cc_root" sequence="10"/>
+    <menuitem id="menu_cc_approvals" name="Credit Approvals" parent="menu_cc_credit"
+              action="action_cc_credit_approvals" sequence="10"/>
+    <menuitem id="menu_cc_customers" name="Credit Customers" parent="menu_cc_credit"
+              action="action_cc_credit_customers" sequence="20"/>
+
+    <menuitem id="menu_cc_pdc_root" name="Cheques (PDC)" parent="menu_cc_root" sequence="20"/>
+    <menuitem id="menu_cc_pdc" name="Post-Dated Cheques" parent="menu_cc_pdc_root"
+              action="action_cc_pdc" sequence="10"/>
+    <menuitem id="menu_cc_pdc_due" name="Due for Deposit" parent="menu_cc_pdc_root"
+              action="action_cc_pdc_due" sequence="20"/>
+
+    <menuitem id="menu_cc_commission_root" name="Commission" parent="menu_cc_root" sequence="30"/>
+    <menuitem id="menu_cc_commission" name="Commission Lines" parent="menu_cc_commission_root"
+              action="action_cc_commission" sequence="10"/>
+    <menuitem id="menu_cc_commission_analysis" name="Commission Analysis" parent="menu_cc_commission_root"
+              action="action_cc_commission_analysis" sequence="20"/>
+
+    <menuitem id="menu_cc_reports" name="Reports" parent="menu_cc_root" sequence="40"/>
+    <menuitem id="menu_cc_aging" name="Aging Analysis" parent="menu_cc_reports"
+              action="action_cc_aging" sequence="10"/>
+    <menuitem id="menu_cc_overdue" name="Overdue Receivables" parent="menu_cc_reports"
+              action="action_cc_overdue" sequence="20"/>
+
+    <menuitem id="menu_cc_config" name="Configuration" parent="menu_cc_root" sequence="90"
+              groups="credit_pdc_commission.group_cc_manager"/>
+    <menuitem id="menu_cc_rules" name="Commission Rules" parent="menu_cc_config"
+              action="action_cc_commission_rule" sequence="10"/>
+    <menuitem id="menu_cc_settings" name="Settings" parent="menu_cc_config"
+              action="action_cc_settings" sequence="20"/>
+</odoo>

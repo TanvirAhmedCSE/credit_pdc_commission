@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_customer_statement">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="d" t-value="data[o.id]"/>
+                <t t-set="cur" t-value="d['credit']['currency']"/>
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Credit Statement</h2>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <div t-field="o.commercial_partner_id"
+                                     t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong>Date:</strong> <span t-out="today" t-options='{"widget": "date"}'/>
+                            </div>
+                        </div>
+
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Credit Limit</th><th>Exposure</th><th>Available</th>
+                                    <th>Overdue</th><th>PDC in Hand</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><t t-if="d['credit']['enabled']"><span t-out="d['credit']['limit']" t-options='{"widget": "monetary", "display_currency": cur}'/></t><t t-else="">-</t></td>
+                                    <td><span t-out="d['credit']['exposure']" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
+                                    <td><t t-if="d['credit']['enabled']"><span t-out="d['credit']['available']" t-options='{"widget": "monetary", "display_currency": cur}'/></t><t t-else="">-</t></td>
+                                    <td><span t-out="d['credit']['overdue']" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
+                                    <td><span t-out="d['credit']['pdc_held']" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="mt-4">Aging Summary</h4>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <t t-foreach="d['buckets']" t-as="b"><th class="text-end"><t t-out="b[1]"/></th></t>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <t t-foreach="d['buckets']" t-as="b">
+                                        <td class="text-end"><span t-out="d['aging'][b[0]]" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
+                                    </t>
+                                    <td class="text-end"><strong><span t-out="d['total']" t-options='{"widget": "monetary", "display_currency": cur}'/></strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="mt-4">Open Items</h4>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Document</th><th>Date</th><th>Due Date</th>
+                                    <th class="text-end">Days Overdue</th><th class="text-end">Amount Due</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="d['rows']" t-as="row">
+                                    <td><t t-out="row['name']"/></td>
+                                    <td><span t-out="row['date']" t-options='{"widget": "date"}'/></td>
+                                    <td><span t-out="row['due']" t-options='{"widget": "date"}'/></td>
+                                    <td class="text-end"><t t-out="row['days']"/></td>
+                                    <td class="text-end"><span t-out="row['residual']" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <t t-if="d['pdcs']">
+                            <h4 class="mt-4">Post-Dated Cheques</h4>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th><th>Cheque No.</th><th>Bank</th><th>Cheque Date</th>
+                                        <th>Status</th><th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="d['pdcs']" t-as="p">
+                                        <td><t t-out="p.name"/></td>
+                                        <td><t t-out="p.cheque_no"/></td>
+                                        <td><t t-out="p.bank_name"/></td>
+                                        <td><span t-field="p.cheque_date"/></td>
+                                        <td><span t-field="p.state"/></td>
+                                        <td class="text-end"><span t-out="p.amount" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
