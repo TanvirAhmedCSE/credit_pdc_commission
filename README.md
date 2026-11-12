@@ -284,7 +284,7 @@ erDiagram
 
 <img src="module screenshots/13.png" width="700"/>
 
-<img src="module screenshots/14.png" width="700"/>
+<img src="module screenshots/014.png" width="700"/>
 
 <img src="module screenshots/15.png" width="700"/>
 
@@ -292,7 +292,9 @@ erDiagram
 
 <img src="module screenshots/17.png" width="700"/>
 
-<img src="module screenshots/18.png" width="700"/>
+<img src="module screenshots/017.png" width="700"/>
+
+<img src="module screenshots/018.png" width="700"/>
 
 <img src="module screenshots/19.png" width="700"/>
 
