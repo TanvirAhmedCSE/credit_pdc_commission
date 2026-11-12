@@ -206,7 +206,7 @@ Or: **Apps → Update Apps List → search "Credit Control" → Install**.
 ```
 credit_pdc_commission/
 ├── __init__.py                  # post_init_hook (admin → manager)
-├── __manifest__.py
+├── __manifest__.py              
 ├── controllers/
 │   └── portal.py                # /my/credit, /my/credit/statement, /my/pdc
 ├── data/
@@ -233,7 +233,15 @@ credit_pdc_commission/
 ├── security/
 │   ├── security.xml             # Groups & record rules
 │   └── ir.model.access.csv
-├── static/description/icon.png
+├── static/
+│   ├── description/
+│   │   └── icon.png
+│   └── src/
+│       ├── css/
+│       │   └── report_fonts.css          
+│       └── fonts/
+│           ├── NotoSansBengali-Regular.ttf   
+│           └── NotoSansBengali-Bold.ttf      
 └── views/                       # Backend views, menus, portal templates
 ```
 
