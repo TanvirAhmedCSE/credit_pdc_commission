@@ -27,6 +27,11 @@
         'views/portal_templates.xml',
         'views/menus.xml',
     ],
+    'assets': {
+        'web.report_assets_common': [
+            'credit_pdc_commission/static/src/css/report_fonts.css',
+        ],
+    },
     'post_init_hook': 'post_init_hook',
     'application': True,
     'installable': True,
